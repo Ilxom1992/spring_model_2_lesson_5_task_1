@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.entity.Role;
 import com.example.demo.entity.enams.RoleEnum;
 import com.example.demo.entity.User;
 import com.example.demo.payload.LoginDto;
@@ -20,9 +21,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class AuthService implements UserDetailsService {
@@ -55,18 +54,24 @@ public class AuthService implements UserDetailsService {
             return new Response("Bunday email bazada mavjud",false);
         }
         User user=new User();
+        Set<Role> roleSet=new HashSet<>();
+        for (Role sentRole : registerDto.getRoleList()) {
+            if (sentRole.getRoleName().name().equals("DIRECTOR")){
+                roleSet.add(sentRole);
+            }
+        }
+        user.setRole(Collections.singleton(roleRepository.findByRoleName(RoleEnum.ROLE_DIRECTOR)));
         user.setFirstName(registerDto.getFirstName());
         user.setLastName(registerDto.getLastName());
         user.setEmail(registerDto.getEmail());
         user.setPassword(passwordEncoder.encode(registerDto.getPassword()));
-
         user.setEnabled(true);
         //USERGA ROLE BERISH
-        user.setRole(Collections.singleton(roleRepository.findByRoleName(RoleEnum.ROLE_DIRECTOR)));
 
         //tasodifiy sonni yaratib beradi va userga saqlanadi
         user.setEmailCode(UUID.randomUUID().toString());
         userRepository.save(user);
+
         //EMAILGA HABAR YUBORISH TASDIQLASH KODINI YUBORADI, METHODINI CHAQIRYABMIZ
         sendEmail(user.getEmail(),user.getEmailCode());
         return new Response("Muafaqiyatli ro'yhatdan o'tdingiz Aakkonutingiz " +

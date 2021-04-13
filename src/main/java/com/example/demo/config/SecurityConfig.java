@@ -1,10 +1,13 @@
 package com.example.demo.config;
 
+import com.example.demo.entity.enams.RoleEnum;
+import com.example.demo.model.AUTHORITY;
 import com.example.demo.security.JwtFilter;
 import com.example.demo.service.AuthService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpMethod;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,32 +34,23 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         this.jwtFilter = jwtFilter;
     }
 
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(authService).passwordEncoder(passwordEncoder());
-    }
-
     /**
      * bu yerda tizimdagi huquqlar belgilangan ochi yopiq yollar berilgan
      * @param http
      * @throws Exception
      */
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
-       http
-               .csrf().disable()
-               .authorizeRequests()
-               .antMatchers("/api/auth/register","/api/auth/verifyEmail","/api/auth/login","/api/card/**")
-               .permitAll()
-               .anyRequest()
-               .authenticated()
-               .and()
-               .httpBasic();
-http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        http
+                .csrf().disable()
+                .authorizeRequests()
+                .antMatchers("/api/auth/register","/api/auth/verifyEmail","/api/auth/login")
+                .authenticated()
+                .and()
+                .httpBasic();
     }
-
     /**
      * gmail.com ga hat yuborish uchun ishlatiladi
      * nastroykalari
@@ -85,7 +79,6 @@ http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 PasswordEncoder passwordEncoder(){
         return new  BCryptPasswordEncoder();
 }
-
     @Bean
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
