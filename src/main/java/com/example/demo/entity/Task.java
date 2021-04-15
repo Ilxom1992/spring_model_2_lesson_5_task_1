@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.example.demo.entity.enams.TaskStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,16 +24,21 @@ public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private String  name;
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
     private String description;
+
     private Date deadline;
-    private boolean isActive;
-    @CreatedBy
-    private UUID createBy;//KIM QO'SHGANLIGI
-    @LastModifiedBy
-    private UUID updateBy;//KIM TAHRIRLAGANLIGI
+    @Enumerated(EnumType.STRING)
+    private TaskStatus status;
+
+    @Column(nullable = false,updatable = false)
+    @CreationTimestamp
+    private java.sql.Timestamp createdAt;
     @UpdateTimestamp
     private Timestamp updateAt;
-    @CreationTimestamp
-    private Timestamp createdAt;
+
+
 }

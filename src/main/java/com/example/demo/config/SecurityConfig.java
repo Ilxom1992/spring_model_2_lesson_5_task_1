@@ -46,8 +46,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/api/auth/register","/api/auth/verifyEmail","/api/auth/login")
-                .authenticated()
+                .antMatchers("/auth/register","/auth/verifyEmail","/auth/login")
+                .permitAll()
                 .and()
                 .httpBasic();
     }
@@ -62,7 +62,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     mailSender.setHost("smtp.gmail.com");
     mailSender.setPort(587);
     mailSender.setUsername("ilxom.xojamurodov@gmail.com");
-    mailSender.setPassword("");
+    mailSender.setPassword("qoramarmarid");
     Properties properties =mailSender.getJavaMailProperties();
     properties.put("mail.transport.protocol","smtp");
     properties.put("mail.smtp.auth","true");

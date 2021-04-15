@@ -1,5 +1,6 @@
 package com.example.demo.security;
 
+import com.example.demo.entity.User;
 import com.example.demo.service.AuthService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,7 +45,17 @@ public class JwtFilter extends OncePerRequestFilter{
         }
        filterChain.doFilter(httpServletRequest,httpServletResponse);
     }
+    public UserDetails getUser(HttpServletRequest httpServletRequest) {
+        String authorization = httpServletRequest.getHeader("Authorization");
+        if (authorization != null && authorization.startsWith("Bearer")) {
+            authorization = authorization.substring(7);
+            String email = jwtProvider.getUserEmailFromToken(authorization);
+            if (email != null) {
+                UserDetails userDetails = authService.loadUserByUsername(email);
+                return userDetails;
+            }
+        }
+        return null;
     }
-
-
+}
 

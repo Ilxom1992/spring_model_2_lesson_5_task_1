@@ -58,4 +58,14 @@ public class JwtProvider {
             return null;
         }
     }
+    public String getRoleNameFromToken(String token) {
+
+        Object role = Jwts
+                .parser()
+                .setSigningKey(secretKey)
+                .parseClaimsJws(token)
+                .getBody()
+                .get("role");
+        return role.toString();
+    }
 }

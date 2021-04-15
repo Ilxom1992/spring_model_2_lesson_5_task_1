@@ -38,6 +38,7 @@ public class User implements UserDetails  {
 
     @Column(nullable = false)
     private String password;
+
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Position> position;
 
@@ -53,9 +54,7 @@ public class User implements UserDetails  {
        private boolean accountNonLocked=true;//bu user boloclanmaganligi
        private boolean credentialsNonExpired=true;//
        private boolean enabled;//
-
-
-    private  String emailCode;
+       private  String emailCode;
      //BU USER DETAILESNINIG METHODLARI
     //USERNINIG HUQUQLARI
     @Override
