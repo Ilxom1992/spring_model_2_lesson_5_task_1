@@ -7,13 +7,13 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.UUID;
+
 
 @Data
 @AllArgsConstructor
@@ -25,18 +25,25 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Column(nullable = false)
-    private String name;
+    private String title;
 
     @Column(nullable = false)
-    private String description;
+    private String body;
 
-    private Date deadline;
-    @Enumerated(EnumType.STRING)
+    private Date deadLine;          // vazifa tugatilishi kerak bo'lgan vaqt
+    @ManyToOne
+    private User responsible;       // vazifaga mas'ul
+
+    private String taskCode;        //taskni qabul qiluvchiga yuboriladigan code
+
     private TaskStatus status;
+
+    @CreatedBy
+    private UUID createdBy;          // vazifa qo'shuvchi
 
     @Column(nullable = false,updatable = false)
     @CreationTimestamp
-    private java.sql.Timestamp createdAt;
+    private Timestamp createdAt;
     @UpdateTimestamp
     private Timestamp updateAt;
 

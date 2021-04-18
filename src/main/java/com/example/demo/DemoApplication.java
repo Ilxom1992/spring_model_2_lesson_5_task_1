@@ -20,15 +20,18 @@ public class DemoApplication {
 //        Bo’lim rahbarlari ichida HR_MANAGER degan lavozim bo’lishi kerak.
 //        Ushbu lavozimdagi manager tizimga boshqa xodimlarni qo’shadi. Xodimlar ro’yxatga olinganda ularning ham
 //        email manziliga link jo’natiladi.
+
 //        Xodimlar
 //        Xodimlar tizimga kirish uchun emailiga kelgan link orqali tizimda o’ziga parol qo’yadi.
 //        Xodimlarni email manzili takrorlanmas username hisobalandi.
 //        Xodimlarga turniket beriladi.
+
 //        Vazifa
 //        Vazifa uch xil holatda bo’ladi(yangi, jarayonda, bajarilgan)
 //        Direktor managerlarga va xodimlarga, managerlar esa faqat xodimlarga vazifa biriktira oladi.
 //        Har bir vazifa uchun vazifa nomi, vazifa  haqida izoh, vazifaning yakunlanishi kerak bo’lgan vaqti kiritiladi
 //        va ushbu vazifaga xodim biriktiriladi.
+
 //        Vazifa biriktirilgan xodimning email manziliga xabar jo’natiladi.
 //        Shu bilan birga xodimlarning tizimdagi oynasida ushbu vazifalar ko’rinishi kerak.
 //        Xodim vazfani bajarib bo’lgach bajarilganligi haqida belgi qo’yadi va ushbu vazifa bajarilganligi haqida vazifa
@@ -42,9 +45,9 @@ public class DemoApplication {
 //        Turniketning qaysi tomonidan scanner qilinganiga korxonaga kirgan yoki chiqqan vaqt haqida malumotlar qayd
 //        etib borilishi kerak.
 //
-//        Rahbaniyat
+//        Rahbariyat
 //        Dirktor va HR_MANAGER lavozimidagi manager uchun xodimlar ro’yxati ko’rinib turadi.
-//        Har bir xodim haqidagi ma’lumotlarni ko’rmochi bo’lsa ushbu xodimning belgilangan oraliq vaqt bo’yicha ishga
+//        Har bir xodim haqidagi ma’lumotlarni ko’rmoqchi bo’lsa ushbu xodimning belgilangan oraliq vaqt bo’yicha ishga
 //        kelib-ketishi va bajargan tasklari haqida ma’lumot chiqishi kerak.
 //        Xar bir xodimga ma’lum bir oylik ish haqi belgilanadi.
 //        Xodimga oylik berilgach sistemaga qayd etib boriladi.

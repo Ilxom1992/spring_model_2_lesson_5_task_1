@@ -48,8 +48,9 @@ public class User implements UserDetails  {
     @UpdateTimestamp
     private  Timestamp updateAt;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    private Set<Role> role;
+    @ManyToMany
+    private Set<Role> roles;
+
        private boolean accountNonExpired=true;//bu acountning amal qilish muddati
        private boolean accountNonLocked=true;//bu user boloclanmaganligi
        private boolean credentialsNonExpired=true;//
@@ -59,7 +60,7 @@ public class User implements UserDetails  {
     //USERNINIG HUQUQLARI
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.role;
+        return this.roles;
     }
 //USERNINIG USER NAMENI QAYTARUVCHI METOD
     @Override

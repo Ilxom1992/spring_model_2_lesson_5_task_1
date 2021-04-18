@@ -1,13 +1,16 @@
 package com.example.demo.service;
-
-import com.example.demo.config.KimYozganiniBilish;
+import com.example.demo.config.GetTheUser;
 import com.example.demo.entity.Role;
+import com.example.demo.entity.Task;
 import com.example.demo.entity.enams.RoleEnum;
 import com.example.demo.entity.User;
+import com.example.demo.entity.enams.TaskStatus;
 import com.example.demo.payload.LoginDto;
 import com.example.demo.payload.RegisterDto;
 import com.example.demo.payload.Response;
+import com.example.demo.payload.TaskDto;
 import com.example.demo.repository.RoleRepository;
+import com.example.demo.repository.TaskRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.security.JwtFilter;
 import com.example.demo.security.JwtProvider;
@@ -23,10 +26,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
-
 @Service
 public class AuthService implements UserDetailsService {
 
@@ -37,8 +38,9 @@ public class AuthService implements UserDetailsService {
     final AuthenticationManager authenticationManager;
     final JwtProvider jwtProvider;
     final JwtFilter jwtFilter;
+    final TaskRepository taskRepository;
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleRepository roleRepository, JavaMailSender javaMailSender,
-                       AuthenticationManager authenticationManager, JwtProvider jwtProvider,@Lazy JwtFilter jwtFilter) {
+                       AuthenticationManager authenticationManager, JwtProvider jwtProvider, @Lazy JwtFilter jwtFilter, TaskRepository taskRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
@@ -46,8 +48,9 @@ public class AuthService implements UserDetailsService {
         this.authenticationManager = authenticationManager;
         this.jwtProvider = jwtProvider;
         this.jwtFilter = jwtFilter;
+        this.taskRepository = taskRepository;
     }
-KimYozganiniBilish kimYozganiniBilish=new KimYozganiniBilish();
+GetTheUser getTheUser =new GetTheUser();
     /**
      * BU METHOD BAZAGA USERNI REGISTIRATSIYADAN O'TKAZISH UCHUN ISHLATILADI
      * BAZAGA USERNI SAQLAYDI VA UNGA TASDIQLASH CODINI YUBORADI
@@ -58,25 +61,30 @@ KimYozganiniBilish kimYozganiniBilish=new KimYozganiniBilish();
     public Response userRegister(RegisterDto registerDto, HttpServletRequest httpServletRequest) {
         User user = new User();
         UserDetails userDetails = jwtFilter.getUser(httpServletRequest);
-
+        //USER BAZADA BOR YOKI YO'QLIGI TEKSHIRILYABDI
         if (userDetails != null) {
-            Optional<User> optionalUser = userRepository.findById(kimYozganiniBilish.getCurrentAuditor().get());
-            Set<Role> roleUser = optionalUser.get().getRole();
+            //USER BAZADAN OLINDI
+            Optional<User> optionalUser = userRepository.findById(getTheUser.getCurrentAuditor().get());
+            //USERNINIG ROLLARI OLINDI
+            Set<Role> roleUser = optionalUser.get().getRoles();
+            //ROLE TEKSHIRILADI AGAR 3 VA 4- ID LI ROLE BO'LSA REGISTRATSIYA QILISHGA RUHSAT BERILMAYDI QAYTARILADI
             for (Role roleId2 : roleUser) {
                 if (roleId2.getId() == 3 || roleId2.getId() == 4) {
                     return new Response("Not add", false);
                 }
             }
+            //AGAR USER ROLE ID 2 BO'LSA U 1-2-3 ID LI ROLLARNI QO'SHA OLMAYDI QAYTARILADI
             for (Role role : roleUser) {
-                if (role.getId() == 2 && (registerDto.getRoleListId().get(0) == 1 || registerDto.getRoleListId().get(0)==3)) {
+                if (role.getId() == 2 && (registerDto.getRoleListId().get(0) == 1 || registerDto.getRoleListId().get(0)==3 || registerDto.getRoleListId().get(0)==2) ) {
                     return new Response("Not add", false);
                 }
             }
-
-            user.setRole(Collections.singleton(roleRepository.findById(registerDto.getRoleListId().get(0)).get()));
+            //AKS HOLDA BAZAGA QO'SHISHGA RUHSAT BERILADI FAQAT KELGAN ROLLARDAN BIRINCHI ROLE BERILADI
+            user.setRoles(Collections.singleton(roleRepository.findById(registerDto.getRoleListId().get(0)).get()));
             user.setFirstName(registerDto.getFirstName());
             user.setLastName(registerDto.getLastName());
             user.setEmail(registerDto.getEmail());
+         // String newPassword=UUID.randomUUID().toString().substring(8);
             user.setPassword("");
             //tasodifiy sonni yaratib beradi va userga saqlanadi
             user.setEmailCode(UUID.randomUUID().toString());
@@ -85,14 +93,14 @@ KimYozganiniBilish kimYozganiniBilish=new KimYozganiniBilish();
             sendEmail(user.getEmail(), user.getEmailCode());
             return new Response("Muafaqiyatli ro'yhatdan o'tdingiz Aakkonutingiz " +
                     "aktivlashtirishingiz uchun emailni tasdiqlang " +
-                    "va Yangi parolni kiriting", true);
+                    "va Yangi parol yuborildi", true);
         }
 
         boolean existsByEmail = userRepository.existsByEmail(registerDto.getEmail());
         if (existsByEmail){
             return new Response("Bunday email bazada mavjud",false);
         }
-        user.setRole(Collections.singleton(roleRepository.findByRoleName(RoleEnum.ROLE_DIRECTOR)));
+        user.setRoles(Collections.singleton(roleRepository.findByRoleName(RoleEnum.ROLE_DIRECTOR)));
         user.setFirstName(registerDto.getFirstName());
         user.setLastName(registerDto.getLastName());
         user.setEmail(registerDto.getEmail());
@@ -127,6 +135,39 @@ KimYozganiniBilish kimYozganiniBilish=new KimYozganiniBilish();
 catch (Exception e){
     return false;
 }
+    }
+        /**
+         * Bu method tizim hodimlariga vazfa jo'natish uchun bu methodda hodim emailiga habar yuboriladi uqa bul qilgach
+         * tizimga statusi qaytadi.
+          */
+        public Boolean sendEmailToTask(String sendingEmail,TaskDto taskDto) {
+            try {
+                SimpleMailMessage mailMessage = new SimpleMailMessage();
+                mailMessage.setFrom("Test@pdp.com");
+                mailMessage.setTo(sendingEmail);
+                mailMessage.setSubject("Vazifa");
+                mailMessage.setText("<a href='http://localhost:8080/auth/taskProgress?taskCode="+taskDto.getTaskCode()+"'>Taskni  Tasdiqlash</a>"+taskDto+"");
+                javaMailSender.send(mailMessage);
+                return true;
+            }
+            catch (Exception e){
+                return false;
+            }
+
+    }
+    public Boolean sendEmailToTaskDone(String sendingEmail) {
+        try {
+            SimpleMailMessage mailMessage = new SimpleMailMessage();
+            mailMessage.setFrom("Test@pdp.com");
+            mailMessage.setTo(sendingEmail);
+            mailMessage.setSubject("Vazifa Bajarildi");
+            mailMessage.setText("<a href='http://localhost:8080/auth/taskComplete'>Taskni  Qabul qilish</a>");
+            javaMailSender.send(mailMessage);
+            return true;
+        }
+        catch (Exception e){
+            return false;
+        }
 
     }
 
@@ -152,7 +193,31 @@ catch (Exception e){
         }
         return new Response("Akkount alloqachon tasdiqlangan",false);
     }
+    /**
+     * bu method task yuboilganda taskni qabul qilgach u qabul qilganini tasdiqlaydi va taskk bajarilish jarayonida bo'ladi
+     * qabul qilinganini va bajarilish jarayonida ekanini bazga yozadi yoki kelgan statusni olib statusinibelgilaydi
+     */
+    public Response taskProgress(String taskCode,Integer taskStatus) {
+        Optional<Task> byTaskCode = taskRepository.findByTaskCode(taskCode);
+        if (byTaskCode.isPresent()) {
+            Task task = byTaskCode.get();
+            if (task.getStatus().equals(TaskStatus.NEW)) {
+                task.setStatus(TaskStatus.PROGRESS);
+                taskRepository.save(task);
+                return new Response("Vazifa  tasdiqlandi", true);
+            }
+            if (task.getStatus().equals(TaskStatus.PROGRESS) && taskStatus==2) {
+                //VAZIFANI BERGAN MANAGERNI BAZADAN OLDIK VA UNGA VAZIFA BAJARILGANI HAQIDA HABAR YUBORAMIZ
+                Optional<User> userByTaskCode = userRepository.getUserByTaskCode(taskCode);
 
+                sendEmailToTaskDone(userByTaskCode.get().getEmail());
+                task.setStatus(TaskStatus.DONE);
+                taskRepository.save(task);
+                return new Response("Vazifa  bajarildi", true);
+            }
+        }
+        return new Response("Vazifa alloqachon Bajarilgan",false);
+    }
     /**
      * BU METHOD USERGA LOGIN VA PAROLI BILAN KIRGANDA TOKIN YASAB QAYTARIB JO'NATADI
      * @param loginDto
@@ -164,7 +229,7 @@ catch (Exception e){
                     loginDto.getUsername(),
                     loginDto.getPassword()));
             User user=(User)authenticate.getPrincipal();
-            String token = jwtProvider.generateToken(loginDto.getUsername(), user.getRole()
+            String token = jwtProvider.generateToken(loginDto.getUsername(), user.getRoles()
             );
             return new Response("Token",true,token);
 

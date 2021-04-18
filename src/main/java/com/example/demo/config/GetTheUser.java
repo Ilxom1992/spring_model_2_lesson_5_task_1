@@ -9,7 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.Optional;
 import java.util.UUID;
 
-public class KimYozganiniBilish implements AuditorAware<UUID> {
+public class GetTheUser implements AuditorAware<UUID> {
     @Override
     public Optional<UUID> getCurrentAuditor() {
         Authentication authentication
@@ -20,6 +20,20 @@ public class KimYozganiniBilish implements AuditorAware<UUID> {
         ) {
             User user=(User)authentication.getPrincipal();
             return Optional.of(user.getId());
+        }
+
+        return Optional.empty();
+    }
+
+    public Optional<User> getCurrentAuditorUser() {
+        Authentication authentication
+                = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null
+                && authentication.isAuthenticated()
+                && !authentication.getPrincipal().equals("anonymousUser")
+        ) {
+            User user=(User)authentication.getPrincipal();
+            return Optional.of(user);
         }
 
         return Optional.empty();

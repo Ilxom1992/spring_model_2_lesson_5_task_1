@@ -3,8 +3,10 @@ package com.example.demo.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.util.Date;
 
 @Data
@@ -15,10 +17,19 @@ public class SalaryHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
     @ManyToOne
-    private  User user;
-    private Integer amount;
-    private Date dateTime;
-    private Date work_end_date;
-    private Date work_start_date;
+    private User employee;
+
+    private double salaryAmount;
+
+    @Column(nullable = false, updatable = false)
+    @CreationTimestamp
+    private Timestamp createdAt;
+
+    @Column(nullable = false)
+    private Date workStartDate;
+
+    @Column(nullable = false)
+    private Date workEndDate;
 }

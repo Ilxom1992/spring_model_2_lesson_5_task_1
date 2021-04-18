@@ -9,9 +9,9 @@ import java.util.UUID;
 
 @Configuration
 @EnableJpaAuditing
-public class KimYozganiniQaytarganiniSozlash {
+public class AuditingConfig {
     @Bean
     AuditorAware<UUID> auditorAware(){
-        return new KimYozganiniBilish();
+        return new GetTheUser();
     }
 }
