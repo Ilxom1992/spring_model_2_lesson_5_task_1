@@ -6,6 +6,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/turniket")
 public class TurniketController {
@@ -16,18 +18,15 @@ public class TurniketController {
     }
 
     @PostMapping
-    public HttpEntity<?> enterToWork() {
-        Response response = turniketService.enterToWork();
-        return ResponseEntity.status(response.isStatus() ? 200 : 401).body(response);
+    public HttpEntity<?> addTurniket(@RequestParam String location, @RequestParam UUID userId) {
+        Response response=turniketService.addturnket(location,userId);
+        return  ResponseEntity.ok(response);
     }
 
-    @PutMapping
-    public HttpEntity<?> exitFromWork(){
-        Response response = turniketService.exitFromWork();
+    @GetMapping
+    public HttpEntity<?> turniketUserEnterAndExit(@RequestParam Integer turniketId) {
+        Response response = turniketService.addHistory(turniketId);
         return ResponseEntity.status(response.isStatus() ? 200 : 401).body(response);
     }
-
-
-
 
 }

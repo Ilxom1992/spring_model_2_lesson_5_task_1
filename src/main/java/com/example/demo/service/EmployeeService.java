@@ -7,7 +7,6 @@ import com.example.demo.payload.SalaryDto;
 import com.example.demo.repository.*;
 import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -19,13 +18,15 @@ public class EmployeeService {
     final TurniketRepository turniketRepository;
     final TaskRepository taskRepository;
     final SalaryHistoryRepository salaryHistoryRepository;
+    final TurniketHistoryRepository turniketHistoryRepository;
     GetTheUser getTheUser = new GetTheUser();
-    public EmployeeService(UserRepository userRepository, RoleRepository roleRepository, TurniketRepository turniketRepository, TaskRepository taskRepository, SalaryHistoryRepository salaryHistoryRepository) {
+    public EmployeeService(UserRepository userRepository, RoleRepository roleRepository, TurniketRepository turniketRepository, TaskRepository taskRepository, SalaryHistoryRepository salaryHistoryRepository, TurniketHistoryRepository turniketHistoryRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.turniketRepository = turniketRepository;
         this.taskRepository = taskRepository;
         this.salaryHistoryRepository = salaryHistoryRepository;
+        this.turniketHistoryRepository = turniketHistoryRepository;
     }
 
 
@@ -52,33 +53,38 @@ public class EmployeeService {
         return new Response("Not Found Employee", false);
     }
     // BERILGAN VAQIT  bo’yicha ishga kelib-ketishi va bajargan tasklari haqida ma’lumotLAR OLINADI
-    public Response findOneByData(UUID id, String start, String finish) {
+    public Response findOneByData(UUID id, Timestamp start, Timestamp finish) {
         Optional<User> userSystem = getTheUser.getCurrentAuditorUser();
         Set<Role> roles = userSystem.get().getRoles();
         DateTimeFormatter pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         LocalDateTime startLocalDate;
         LocalDateTime finishLocalDate;
         try {
-            startLocalDate = LocalDateTime.parse(start, pattern);
-            finishLocalDate = LocalDateTime.parse(finish, pattern);
+            startLocalDate = start.toLocalDateTime();
+            finishLocalDate = finish.toLocalDateTime();
         } catch (DateTimeParseException e) {
             return new Response("LocalDateTime no Parse", false);
         }
+
         Optional<User> optionalUser = userRepository.findById(id);
         if (!optionalUser.isPresent()) {
             return new Response("This employee not found", false);
         }
+
         for (Role role : roles) {
             if (role.getId() == 3 || role.getId() == 4) {
                 return new Response("It is forbidden to receive this information", false);
             }
         }
-             List<Turniket> turniketList = turniketRepository.getAllByCreatedBy(id, startLocalDate, finishLocalDate);
-             if (turniketList.isEmpty()) {
+                /*
+                bazadan berilgan vaqit oralig'idagi user idga tegishli turniketlar istoriyasini olib  keladi
+                 */
+             List<TurniketHistory> turniketHistoryList = turniketHistoryRepository.getTurniketHistoryByUserId(id, startLocalDate, finishLocalDate);
+             if (turniketHistoryList.isEmpty()) {
                  return new Response("Data not found!", false);
              }
         List<Task> taskList = taskRepository.findAllByStatusAndResponsibleId(TaskStatus.DONE, id);
-        return new Response("Done", true, " " + taskList);
+        return new Response("Done", true, turniketHistoryList+" " + taskList);
     }
     public Response payMonthly(SalaryDto salaryDto) {
         Optional<User> userSystem = getTheUser.getCurrentAuditorUser();

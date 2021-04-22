@@ -6,6 +6,8 @@ import com.example.demo.service.EmployeeService;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.sql.Timestamp;
 import java.util.UUID;
 @RestController
 @RequestMapping("/employee")
@@ -20,10 +22,11 @@ public class EmployeeController {
         Response response = employeeService.findAllEmployees();
         return ResponseEntity.status(response.isStatus() ? 200 : 401).body(response);
     }
+    // xodimning belgilangan oraliq vaqt bo’yicha ishga kelib-ketishi va bajargan tasklari haqida ma’lumot
     @GetMapping("/findOneByData")
     public HttpEntity<?> findOneByData(@RequestParam UUID employeeId,
-                                       @RequestParam String startDateTime,
-                                       @RequestParam String finishDateTime){
+                                       @RequestParam Timestamp startDateTime,
+                                       @RequestParam Timestamp finishDateTime){
         Response response=employeeService.findOneByData(employeeId,startDateTime,finishDateTime);
         return ResponseEntity.status(response.isStatus()?200:401).body(response);
     }
@@ -39,6 +42,7 @@ public class EmployeeController {
         Response response = employeeService.getSalariesByUserId(id);
         return ResponseEntity.status(response.isStatus() ? 200 : 401).body(response);
     }
+    // Oylik maosh berish
     @PostMapping("/salary")
     public HttpEntity<?> payMonthly(@RequestBody SalaryDto salaryDto) {
         Response response = employeeService.payMonthly(salaryDto);
